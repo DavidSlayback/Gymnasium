@@ -169,6 +169,10 @@ class RetriesExceededError(Error):
     """Error message for retries exceeding set number."""
 
 
+class NoVectorWrapperError(Error):
+    """Error message for attempting to wrap a VectorEnv with unsupported wrapper."""
+
+
 # Vectorized environments errors
 
 

@@ -1,4 +1,6 @@
 """Implementation of Atari 2600 Preprocessing following the guidelines of Machado et al., 2018."""
+from typing import Union
+
 import numpy as np
 
 import gymnasium as gym
@@ -10,7 +12,19 @@ except ImportError:
     cv2 = None
 
 
-class AtariPreprocessing(gym.Wrapper):
+def AtariPreprocessing(
+    env: Union[gym.Env, gym.vector.VectorEnv], *args, **kwargs
+) -> gym.Wrapper:
+    """Return appropriate AtariPreprocessing wrapper."""
+    if isinstance(env, gym.vector.VectorEnv):
+        raise gym.error.NoVectorWrapperError(
+            "AtariPreprocessing does not support VectorEnv"
+        )
+    else:
+        return _AtariPreprocessing(env, *args, **kwargs)
+
+
+class _AtariPreprocessing(gym.Wrapper):
     """Atari 2600 preprocessing wrapper.
 
     This class follows the guidelines in Machado et al. (2018),

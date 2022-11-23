@@ -1,8 +1,20 @@
 """Wrapper that autoreset environments when `terminated=True` or `truncated=True`."""
+from typing import Union
+
 import gymnasium as gym
 
 
-class AutoResetWrapper(gym.Wrapper):
+def AutoResetWrapper(env: Union[gym.Env, gym.vector.VectorEnv]) -> gym.Wrapper:
+    """Return appropriate AutoReset wrapper."""
+    if isinstance(env, gym.vector.VectorEnv):
+        raise gym.error.NoVectorWrapperError(
+            "AutoResetWrapper does not support VectorEnv (VectorEnv already autoresets)"
+        )
+    else:
+        return _AutoResetWrapper(env)
+
+
+class _AutoResetWrapper(gym.Wrapper):
     """A class for providing an automatic reset functionality for gymnasium environments when calling :meth:`self.step`.
 
     When calling step causes :meth:`Env.step` to return `terminated=True` or `truncated=True`, :meth:`Env.reset` is called,

@@ -4,9 +4,24 @@ from typing import Iterable, List, Optional, Union
 import gymnasium as gym
 from gymnasium.vector.async_vector_env import AsyncVectorEnv
 from gymnasium.vector.sync_vector_env import SyncVectorEnv
-from gymnasium.vector.vector_env import VectorEnv, VectorWrapper
+from gymnasium.vector.vector_env import (
+    VectorActionWrapper,
+    VectorEnv,
+    VectorObservationWrapper,
+    VectorRewardWrapper,
+    VectorWrapper,
+)
 
-__all__ = ["AsyncVectorEnv", "SyncVectorEnv", "VectorEnv", "VectorWrapper", "make"]
+__all__ = [
+    "AsyncVectorEnv",
+    "SyncVectorEnv",
+    "VectorEnv",
+    "VectorWrapper",
+    "VectorActionWrapper",
+    "VectorObservationWrapper",
+    "VectorRewardWrapper",
+    "make",
+]
 
 
 def make(

@@ -10,7 +10,13 @@ from gymnasium.utils import seeding
 if TYPE_CHECKING:
     from gymnasium.envs.registration import EnvSpec
 
-__all__ = ["VectorEnv"]
+__all__ = [
+    "VectorEnv",
+    "VectorWrapper",
+    "VectorObservationWrapper",
+    "VectorRewardWrapper",
+    "VectorActionWrapper",
+]
 
 ArrayType = TypeVar("ArrayType")
 
@@ -55,7 +61,9 @@ class VectorEnv(Generic[ObsType, ActType, ArrayType]):
     spec: "EnvSpec" = None
 
     observation_space: gym.Space = None
+    single_observation_space: gym.Space = None
     action_space: gym.Space = None
+    single_action_space: gym.Space = None
 
     num_envs: int
 
@@ -236,6 +244,11 @@ class VectorWrapper(VectorEnv):
     """
 
     def __init__(self, env: VectorEnv):
+        """Wraps a vector environment to allow a modular transformation of the :meth:`step` and :meth:`reset` methods.
+
+        Args:
+            env: The environment to wrap
+        """
         super().__init__()
 
         assert isinstance(env, VectorEnv)
@@ -245,31 +258,39 @@ class VectorWrapper(VectorEnv):
     # to self.env (instead of the base class)
 
     def reset(self, **kwargs):
+        """Reset environments."""
         return self.env.reset(**kwargs)
 
     def step(self, actions):
+        """Step environments."""
         return self.env.step(actions)
 
     def close(self, **kwargs):
+        """Close environments."""
         return self.env.close(**kwargs)
 
     def close_extras(self, **kwargs):
+        """Close extras in environments."""
         return self.env.close_extras(**kwargs)
 
     # implicitly forward all other methods and attributes to self.env
     def __getattr__(self, name):
+        """Forward attributes to environment."""
         if name.startswith("_"):
             raise AttributeError(f"attempted to get missing private attribute '{name}'")
         return getattr(self.env, name)
 
     @property
     def unwrapped(self):
+        """Unwrapped VectorEnv."""
         return self.env.unwrapped
 
     def __repr__(self):
+        """String representation of vector environment."""
         return f"<{self.__class__.__name__}, {self.env}>"
 
     def __del__(self):
+        """Delete vector environment."""
         self.env.__del__()
 
 
@@ -277,10 +298,12 @@ class VectorObservationWrapper(VectorWrapper):
     """Wraps the vectorized environment to allow a modular transformation of the observation. Equivalent to :class:`gym.ObservationWrapper` for vectorized environments."""
 
     def reset(self, **kwargs):
+        """Reset environment, transform observation."""
         observation = self.env.reset(**kwargs)
         return self.observation(observation)
 
     def step(self, actions):
+        """Step environment, transform observation."""
         observation, reward, termination, truncation, info = self.env.step(actions)
         return (
             self.observation(observation),
@@ -307,6 +330,7 @@ class VectorActionWrapper(VectorWrapper):
     """Wraps the vectorized environment to allow a modular transformation of the actions. Equivalent of :class:`~gym.ActionWrapper` for vectorized environments."""
 
     def step(self, actions: ActType):
+        """Steo environment with transformed action."""
         return self.env.step(self.action(actions))
 
     def actions(self, actions: ActType) -> ActType:
@@ -325,6 +349,7 @@ class VectorRewardWrapper(VectorWrapper):
     """Wraps the vectorized environment to allow a modular transformation of the reward. Equivalent of :class:`~gym.RewardWrapper` for vectorized environments."""
 
     def step(self, actions):
+        """Step environment, transform reward."""
         observation, reward, termination, truncation, info = self.env.step(actions)
         return observation, self.reward(reward), termination, truncation, info
 
